@@ -1,0 +1,50 @@
+# PostgreSQL and Database
+*.sql.bak
+*.sql.backup
+*.dump
+*.backup
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS
+*.tmp
+*.temp
+*.cache
+
+# Sensitive data
+credentials.txt
+passwords.txt
+secrets.md
+
+# Test output
+test_results/
+test_logs/
+
+# Build artifacts
+node_modules/
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
