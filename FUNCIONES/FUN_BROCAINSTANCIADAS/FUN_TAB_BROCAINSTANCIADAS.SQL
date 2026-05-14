@@ -273,3 +273,178 @@ BEGIN
     RETURN RETORNO;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+
+
+-- FUNCION PARA ELIMINAR UNA BROCA INSTANCIADA POR SU ID
+CREATE OR REPLACE FUNCTION FUN_ELIMINAR_BROCAINSTANCIADA_POR_ID_JSON(
+    jID_BROCA_INSTANCIADA TAB_BROCAINSTANCIADAS.ID_BROCA_INSTANCIADA%TYPE
+) RETURNS JSON AS
+$$
+DECLARE
+    RETORNO JSON;
+BEGIN
+    DELETE FROM TAB_BROCAINSTANCIADAS
+    WHERE ID_BROCA_INSTANCIADA = jID_BROCA_INSTANCIADA;
+
+    IF FOUND THEN
+        RETORNO := json_build_object('CODIGO', 200, 'MENSAJE', 'Broca instanciada eliminada exitosamente'); 
+    ELSE
+        RETORNO := json_build_object('CODIGO', 404, 'MENSAJE', 'Broca instanciada no encontrada para eliminar'); 
+    END IF;
+    RETURN RETORNO;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+-- FUNCIONES DE BUSQUEDA AVANZADA
+
+-- FUNCION PARA OBTENER BROCAS INSTANCIADAS POR SUPERVISOR CON SUS PERFORACIONES Y PROYECTOS
+CREATE OR REPLACE FUNCTION FUN_OBTENER_BROCAS_POR_SUPERVISOR_JSON(
+    jID_SUPERVISOR TAB_SUPERVISORES.ID_SUPERVISOR%TYPE
+) RETURNS JSON AS
+$$
+DECLARE
+    RETORNO JSON;
+    DATOS_COMPLETOS JSON;
+BEGIN
+    --VALIDAR QUE EL SUPERVISOR EXISTA
+    IF jID_SUPERVISOR IS NULL THEN
+        RETORNO := json_build_object('CODIGO', 400, 'MENSAJE', 'ID_SUPERVISOR no puede ser nulo'); 
+        RETURN RETORNO;
+    ELSIF NOT EXISTS (SELECT 1 FROM TAB_SUPERVISORES WHERE ID_SUPERVISOR = jID_SUPERVISOR) THEN
+        RETORNO := json_build_object('CODIGO', 404, 'MENSAJE', 'Supervisor no encontrado'); 
+        RETURN RETORNO;
+    END IF;
+
+    --CONSTRUIR EL JSON CON TODOS LOS DATOS DE BROCAS POR PROYECTOS Y PERFORACIONES
+    SELECT json_build_object(
+        'ID_SUPERVISOR', jID_SUPERVISOR,
+        'NOM_SUPERVISOR', (SELECT NOM_SUPERVISOR FROM TAB_SUPERVISORES WHERE ID_SUPERVISOR = jID_SUPERVISOR),
+        'PROYECTOS', COALESCE((
+            SELECT json_agg(
+                json_build_object(
+                    'ID_PROYECTO', tp.ID_PROYECTO,
+                    'NOM_PROYECTO', tp.NOM_PROYECTO,
+                    'DESCRIPCION_PROYECTO', tp.DESCRIPCION_PROYECTO,
+                    'PERFORACIONES', COALESCE((
+                        SELECT json_agg(
+                            json_build_object(
+                                'ID_PERFORACION', tperf.ID_PERFORACION,
+                                'PROFUNDIDAD_ACTUAL', tperf.PROFUNDIDAD_ACTUAL,
+                                'FECHA_INICIO_PERFORACION', tperf.FECHA_INICIO_PERFORACION,
+                                'FECHA_FIN_PERFORACION', tperf.FECHA_FIN_PERFORACION,
+                                'BROCAS_INSTANCIADAS', COALESCE((
+                                    SELECT json_agg(
+                                        json_build_object(
+                                            'ID_BROCA_INSTANCIADA', tbi.ID_BROCA_INSTANCIADA,
+                                            'ID_BROCA', tb.ID_BROCA,
+                                            'ESTADO_BROCA', tbi.ESTADO_BROCA,
+                                            'FECHA_REGISTRO_BROCA', tbi.FECHA_REGISTRO_BROCA,
+                                            'FECHA_ULTIMO_USO_BROCA', tbi.FECHA_ULTIMO_USO_BROCA,
+                                            'BROCA', json_build_object(
+                                                'ID_BROCA', tb.ID_BROCA,
+                                                'NOM_BROCA', tb.NOM_BROCA,
+                                                'TIPO_BROCA', tb.TIPO_BROCA,
+                                                'TAMANIO_BROCA', tb.TAMANIO_BROCA,
+                                                'MARCA_BROCA', tb.MARCA_BROCA,
+                                                'DESCRIPCION_BROCA', tb.DESCRIPCION_BROCA
+                                            ),
+                                            'TIPO_MOVIMIENTO', tmb.TIPO_MOVIMIENTO,
+                                            'PROFUNDIDAD_MOVIMIENTO', tmb.PROFUNDIDAD_MOVIMIENTO,
+                                            'FECHA_HORA_MOVIMIENTO', tmb.FECHA_HORA_MOVIMIENTO
+                                        )
+                                    )
+                                    FROM (
+                                        SELECT * FROM TAB_MOVIMIENTO_DE_BROCA
+                                        WHERE ID_PERFORACION = tperf.ID_PERFORACION
+                                        ORDER BY FECHA_HORA_MOVIMIENTO DESC
+                                        LIMIT 1
+                                    ) AS tmb
+                                    INNER JOIN TAB_BROCAINSTANCIADAS tbi ON tmb.ID_BROCA_INSTANCIADA = tbi.ID_BROCA_INSTANCIADA
+                                    INNER JOIN TAB_BROCAS tb ON tbi.ID_BROCA = tb.ID_BROCA
+                                ), '[]'::json)
+                            )
+                        )
+                        FROM TAB_PERFORACIONES tperf
+                        WHERE tperf.ID_PROYECTO = tp.ID_PROYECTO
+                    ), '[]'::json)
+                )
+            )
+            FROM TAB_PROYECTOS tp
+            WHERE tp.ID_SUPERVISOR = jID_SUPERVISOR
+        ), '[]'::json)
+    ) INTO DATOS_COMPLETOS;
+
+    IF DATOS_COMPLETOS IS NULL THEN
+        RETORNO := json_build_object('CODIGO', 404, 'MENSAJE', 'No hay brocas registradas para las perforaciones de este supervisor', 'DATOS', json_build_object('ID_SUPERVISOR', jID_SUPERVISOR, 'NOM_SUPERVISOR', (SELECT NOM_SUPERVISOR FROM TAB_SUPERVISORES WHERE ID_SUPERVISOR = jID_SUPERVISOR), 'PROYECTOS', '[]'::json)); 
+    ELSE
+        RETORNO := json_build_object('CODIGO', 200, 'MENSAJE', 'Brocas obtenidas exitosamente para el supervisor', 'DATOS', DATOS_COMPLETOS);
+    END IF;
+
+    RETURN RETORNO;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- FUNCION SIMPLIFICADA PARA OBTENER BROCAS POR SUPERVISOR (VERSION MEJORADA)
+CREATE OR REPLACE FUNCTION FUN_OBTENER_BROCAS_POR_SUPERVISOR_SIMPLE_JSON(
+    jID_SUPERVISOR TAB_SUPERVISORES.ID_SUPERVISOR%TYPE
+) RETURNS JSON AS
+$$
+DECLARE
+    RETORNO JSON;
+    DATOS_BROCAS JSON;
+BEGIN
+    --VALIDAR QUE EL SUPERVISOR EXISTA
+    IF jID_SUPERVISOR IS NULL THEN
+        RETORNO := json_build_object('CODIGO', 400, 'MENSAJE', 'ID_SUPERVISOR no puede ser nulo'); 
+        RETURN RETORNO;
+    ELSIF NOT EXISTS (SELECT 1 FROM TAB_SUPERVISORES WHERE ID_SUPERVISOR = jID_SUPERVISOR) THEN
+        RETORNO := json_build_object('CODIGO', 404, 'MENSAJE', 'Supervisor no encontrado'); 
+        RETURN RETORNO;
+    END IF;
+
+    --RETORNAR LAS BROCAS INSTANCIADAS AGRUPADAS POR PROYECTO Y PERFORACION
+    SELECT json_build_object(
+        'ID_SUPERVISOR', jID_SUPERVISOR,
+        'NOM_SUPERVISOR', (SELECT NOM_SUPERVISOR FROM TAB_SUPERVISORES WHERE ID_SUPERVISOR = jID_SUPERVISOR),
+        'PROYECTOS', COALESCE(json_agg(
+            json_build_object(
+                'ID_PROYECTO', tp.ID_PROYECTO,
+                'NOM_PROYECTO', tp.NOM_PROYECTO,
+                'ID_PERFORACION', tperf.ID_PERFORACION,
+                'PROFUNDIDAD_ACTUAL', tperf.PROFUNDIDAD_ACTUAL,
+                'ID_BROCA_INSTANCIADA', tbi.ID_BROCA_INSTANCIADA,
+                'ESTADO_BROCA', tbi.ESTADO_BROCA,
+                'ID_BROCA', tb.ID_BROCA,
+                'NOM_BROCA', tb.NOM_BROCA,
+                'TIPO_BROCA', tb.TIPO_BROCA,
+                'TAMANIO_BROCA', tb.TAMANIO_BROCA,
+                'MARCA_BROCA', tb.MARCA_BROCA,
+                'TIPO_MOVIMIENTO', tmb.TIPO_MOVIMIENTO,
+                'PROFUNDIDAD_MOVIMIENTO', tmb.PROFUNDIDAD_MOVIMIENTO,
+                'FECHA_HORA_MOVIMIENTO', tmb.FECHA_HORA_MOVIMIENTO
+            )
+            ORDER BY tp.ID_PROYECTO, tperf.ID_PERFORACION, tbi.ID_BROCA_INSTANCIADA
+        ), '[]'::json)
+    ) INTO DATOS_BROCAS
+    FROM TAB_PROYECTOS tp
+    INNER JOIN TAB_PERFORACIONES tperf ON tp.ID_PROYECTO = tperf.ID_PROYECTO
+    INNER JOIN TAB_MOVIMIENTO_DE_BROCA tmb ON tperf.ID_PERFORACION = tmb.ID_PERFORACION
+    INNER JOIN TAB_BROCAINSTANCIADAS tbi ON tmb.ID_BROCA_INSTANCIADA = tbi.ID_BROCA_INSTANCIADA
+    INNER JOIN TAB_BROCAS tb ON tbi.ID_BROCA = tb.ID_BROCA
+    WHERE tp.ID_SUPERVISOR = jID_SUPERVISOR;
+
+    IF DATOS_BROCAS IS NULL THEN
+        RETORNO := json_build_object('CODIGO', 404, 'MENSAJE', 'No hay brocas registradas para este supervisor', 'DATOS', json_build_object('ID_SUPERVISOR', jID_SUPERVISOR, 'NOM_SUPERVISOR', (SELECT NOM_SUPERVISOR FROM TAB_SUPERVISORES WHERE ID_SUPERVISOR = jID_SUPERVISOR), 'PROYECTOS', '[]'::json));
+    ELSE
+        RETORNO := json_build_object('CODIGO', 200, 'MENSAJE', 'Brocas obtenidas exitosamente', 'DATOS', DATOS_BROCAS);
+    END IF;
+
+    RETURN RETORNO;
+END;
+$$ LANGUAGE plpgsql;

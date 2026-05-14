@@ -99,18 +99,18 @@ SELECT FUN_INSERTAR_SUPERVISORES_JSON('SUP010', 'Sofía González Acero', 'sofia
 -- =====================================================================================================================================
 -- 4. INSERCION DE BROCAS (EXPANDIDO A 12)
 -- =====================================================================================================================================
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca PDC 5 7/8', 'PDC', 'Broca PDC de 5 7/8 pulgadas para formaciones duras', 5.875, 'PDC Matrix', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca Triconica 6', 'TRICONICA', 'Broca tricónica estándar de 6 pulgadas para formaciones medias', 6.0, 'Acero', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca Diamante 4.5', 'DIAMANTE', 'Broca de diamante natural de 4 1/2 pulgadas para roca muy dura', 4.5, 'Diamante Natural', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca PDC 7 7/8', 'PDC', 'Broca PDC de 7 7/8 pulgadas para perforación profunda', 7.875, 'PDC Matrix', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca Triconica 3.5', 'TRICONICA', 'Broca tricónica de 3 1/2 pulgadas para formaciones blandas', 3.5, 'Acero', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca Impregnada 2 7/8', 'IMPREGNADA', 'Broca impregnada de 2 7/8 pulgadas para pozos de exploración', 2.875, 'Diamante Impregnado', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca Diamante 8 1/4', 'DIAMANTE', 'Broca de diamante para perforación ultra profunda de 8 1/4 pulgadas', 8.25, 'Diamante Natural Premium', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca PDC 3 1/2', 'PDC', 'Broca PDC de tamaño pequeño para pozos desviados', 3.5, 'PDC Matrix Especial', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca Triconica Revestida 5', 'TRICONICA', 'Broca tricónica revestida de 5 pulgadas resistente al desgaste', 5.0, 'Acero Revestido', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca Impregnada 5 1/2', 'IMPREGNADA', 'Broca impregnada de 5 1/2 pulgadas para formaciones complejas', 5.5, 'Diamante Impregnado Avanzado', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca PDC 9 7/8', 'PDC', 'Broca PDC de 9 7/8 pulgadas para excavación masiva', 9.875, 'PDC Matrix Industrial', 'admin');
-SELECT FUN_INSERTAR_BROCAS_JSON('Broca Diamante 6 1/4', 'DIAMANTE', 'Broca de diamante de 6 1/4 pulgadas para roca sedimentaria', 6.25, 'Diamante Sintético', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca PDC 5 7/8', 'PDC', 'Broca PDC de 5 7/8 pulgadas para formaciones duras', 5.875, 'PDC Matrix', 'Smith Services', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca Triconica 6', 'TRICONICA', 'Broca tricónica estándar de 6 pulgadas para formaciones medias', 6.0, 'Acero', 'Baker Hughes', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca Diamante 4.5', 'DIAMANTE', 'Broca de diamante natural de 4 1/2 pulgadas para roca muy dura', 4.5, 'Diamante Natural', 'Halliburton', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca PDC 7 7/8', 'PDC', 'Broca PDC de 7 7/8 pulgadas para perforación profunda', 7.875, 'PDC Matrix', 'Smith Services', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca Triconica 3.5', 'TRICONICA', 'Broca tricónica de 3 1/2 pulgadas para formaciones blandas', 3.5, 'Acero', 'Weatherford', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca Impregnada 2 7/8', 'IMPREGNADA', 'Broca impregnada de 2 7/8 pulgadas para pozos de exploración', 2.875, 'Diamante Impregnado', 'Varel', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca Diamante 8 1/4', 'DIAMANTE', 'Broca de diamante para perforación ultra profunda de 8 1/4 pulgadas', 8.25, 'Diamante Natural Premium', 'Halliburton', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca PDC 3 1/2', 'PDC', 'Broca PDC de tamaño pequeño para pozos desviados', 3.5, 'PDC Matrix Especial', 'National Oilwell Varco', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca Triconica Revestida 5', 'TRICONICA', 'Broca tricónica revestida de 5 pulgadas resistente al desgaste', 5.0, 'Acero Revestido', 'Baker Hughes', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca Impregnada 5 1/2', 'IMPREGNADA', 'Broca impregnada de 5 1/2 pulgadas para formaciones complejas', 5.5, 'Diamante Impregnado Avanzado', 'Varel', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca PDC 9 7/8', 'PDC', 'Broca PDC de 9 7/8 pulgadas para excavación masiva', 9.875, 'PDC Matrix Industrial', 'Smith Services', 'admin');
+SELECT FUN_INSERTAR_BROCAS_JSON('Broca Diamante 6 1/4', 'DIAMANTE', 'Broca de diamante de 6 1/4 pulgadas para roca sedimentaria', 6.25, 'Diamante Sintético', 'National Oilwell Varco', 'admin');
 
 -- =====================================================================================================================================
 -- 5. INSERCION DE SUELOS (EXPANDIDO A 10)

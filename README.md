@@ -9,6 +9,7 @@ Sistema de gestión de perforaciones y análisis de rendimiento de brocas para p
 ## 📋 Tabla de Contenidos
 
 - [Descripción](#descripción)
+- [🆕 Últimas Novedades](#-últimas-novedades-mayo-2026)
 - [Requisitos](#requisitos)
 - [⚡ Setup Rápido (Recomendado)](#⚡-setup-rápido-recomendado)
 - [Instalación Paso a Paso](#instalación-paso-a-paso)
@@ -31,7 +32,55 @@ PerforacionZ es un sistema integral para:
 
 **Contexto**: Base de datos para operaciones de perforación con análisis de efectividad de herramientas según tipo de suelo y ubicación geográfica.
 
-## 🔧 Requisitos
+## 🆕 Últimas Novedades (Mayo 2026)
+
+### Nuevas Funcionalidades
+
+#### 1. Eliminación de Brocas y Brocas Instanciadas
+- **FUN_ELIMINAR_BROCA_POR_ID_JSON**: Elimina un modelo de broca de la base de datos (solo si no está siendo usada)
+- **FUN_ELIMINAR_BROCAINSTANCIADA_POR_ID_JSON**: Elimina una instancia de broca del inventario
+
+#### 2. Consultas Avanzadas de Brocas por Supervisor
+Dos versiones nuevas para consultar las brocas utilizadas por un supervisor:
+
+**a) Versión Jerárquica (FUN_OBTENER_BROCAS_POR_SUPERVISOR_JSON)**
+- Retorna estructura anidada: Supervisor → Proyectos → Perforaciones → Brocas
+- Ideal para análisis detallado y visualización en árboles/dashboards
+- Incluye el **último movimiento** de cada broca (ENTRADA/SALIDA)
+- Información completa: ID, nombre, tipo, marca, tamaño de broca + metadata de movimiento
+
+**b) Versión Simple/Plana (FUN_OBTENER_BROCAS_POR_SUPERVISOR_SIMPLE_JSON)**
+- Retorna lista plana de todas las brocas del supervisor
+- Ideal para reportes, exportación a Excel/CSV
+- Más eficiente en consultas simples
+- Incluye el **último movimiento** de cada broca
+
+**Campos retornados en ambas versiones**:
+```json
+{
+  "ID_BROCA_INSTANCIADA": "BROCA-001",
+  "ID_BROCA": 1,
+  "NOM_BROCA": "Broca PDC 5 7/8",
+  "TIPO_BROCA": "PDC",
+  "TAMANIO_BROCA": 5.875,
+  "MARCA_BROCA": "Smith Services",
+  "ESTADO_BROCA": "EN_USO",
+  "TIPO_MOVIMIENTO": "ENTRADA",
+  "PROFUNDIDAD_MOVIMIENTO": 0.0,
+  "FECHA_HORA_MOVIMIENTO": "2026-03-01T08:30:00"
+}
+```
+
+**Ejemplo de uso**:
+```sql
+-- Obtener brocas jerárquicas de supervisor 'SUP001'
+SELECT FUN_OBTENER_BROCAS_POR_SUPERVISOR_JSON('SUP001');
+
+-- Obtener brocas planas de supervisor 'SUP001'
+SELECT FUN_OBTENER_BROCAS_POR_SUPERVISOR_SIMPLE_JSON('SUP001');
+```
+
+---
 
 - **PostgreSQL** 12.0 o superior
 - **PgAdmin** (opcional, para administración visual)
@@ -223,12 +272,15 @@ USUARIO_CREACION (VARCHAR)
 ```sql
 ID_BROCA (INTEGER, PK)         -- ID único del modelo
 NOM_BROCA (VARCHAR)            -- Nombre comercial
-TIPO_BROCA (VARCHAR)           -- Tipo (Diamante, Carburo, etc)
-TAMANIO_BROCA (FLOAT)          -- Diámetro en pulgadas
-MATRIX_BROCA (VARCHAR)         -- Material de matriz
+TIPO_BROCA (VARCHAR)           -- Tipo (Diamante, Carburo, PDC, Tricónica, Impregnada)
 DESCRIPCION_BROCA (VARCHAR)    -- Descripción técnica
+TAMANIO_BROCA (FLOAT)          -- Diámetro en pulgadas
+MATRIX_BROCA (VARCHAR)         -- Material de matriz (PDC Matrix, Acero, Diamante, etc)
+MARCA_BROCA (VARCHAR)          -- Marca del fabricante (Smith Services, Baker Hughes, Halliburton, etc)
 FECHA_CREACION (TIMESTAMP)
 USUARIO_CREACION (VARCHAR)
+FECHA_MODIFICACION (TIMESTAMP)
+USUARIO_MODIFICACION (VARCHAR)
 ```
 
 ### Tablas Dependientes
@@ -296,30 +348,131 @@ Cada carpeta en `FUNCIONES/` contiene tres archivos:
 - **FUN_TAB_*.SQL**: Funciones para operaciones CRUD
 - **PRU_FUN_*.SQL**: Pruebas unitarias
 
-### Ejemplo: Funciones para Brocas
-
-```sql
--- INSERTAR
-SELECT FUN_INS_TAB_BROCAS('Broca X', 'Diamante', 5.0, 'Acero', 'Descripción');
-
--- ACTUALIZAR
-SELECT FUN_UPD_TAB_BROCAS(1, 'Nuevo Nombre', 'Tipo', 5.5, 'Matrix', 'Desc');
-
--- OBTENER UNA
-SELECT * FROM FUN_CONS_TAB_BROCAS_ID(1);
-
--- OBTENER TODAS
-SELECT * FROM FUN_CONS_TAB_BROCAS();
-
--- ELIMINAR
-SELECT FUN_DEL_TAB_BROCAS(1);
-```
+### Patrones de Nomenclatura
 
 Las funciones siguen el patrón:
-- `FUN_INS_*` - Insert (crear)
-- `FUN_UPD_*` - Update (modificar)
-- `FUN_CONS_*` - Consultar (read)
-- `FUN_DEL_*` - Delete (eliminar)
+- `FUN_INSERTAR_*` - Insert (crear)
+- `FUN_ACTUALIZAR_*` - Update (modificar)
+- `FUN_OBTENER_*` - Read (consultar)
+- `FUN_ELIMINAR_*` - Delete (eliminar)
+
+Todas retornan JSON con estructura: `{CODIGO, MENSAJE, DATOS}`
+
+### Ejemplo: Funciones para Brocas
+
+#### Insertar una broca (con marca)
+```sql
+SELECT FUN_INSERTAR_BROCAS_JSON(
+    'Broca PDC 5 7/8',           -- Nombre
+    'PDC',                        -- Tipo
+    'Broca PDC para formaciones duras',  -- Descripción
+    5.875,                        -- Tamaño
+    'PDC Matrix',                 -- Matrix
+    'Smith Services',             -- Marca
+    'admin'                       -- Usuario
+);
+```
+
+#### Actualizar una broca (con marca)
+```sql
+SELECT FUN_ACTUALIZAR_BROCAS_JSON(
+    1,                            -- ID Broca
+    'Broca Actualizada',
+    'TRICONICA',
+    'Descripción actualizada',
+    6.0,
+    'Acero Mejorado',
+    'Baker Hughes',               -- Marca
+    'admin'
+);
+```
+
+#### ✨ NUEVO: Eliminar una broca
+```sql
+SELECT FUN_ELIMINAR_BROCA_POR_ID_JSON(1);
+```
+
+#### Obtener una broca
+```sql
+SELECT FUN_OBTENER_BROCA_POR_ID_JSON(1);
+```
+
+#### Obtener todas las brocas
+```sql
+SELECT FUN_OBTENER_TODAS_BROCAS_JSON();
+```
+
+### Ejemplo: Nuevas Funciones de Brocas por Supervisor
+
+#### ✨ Obtener brocas - Versión Jerárquica
+```sql
+SELECT FUN_OBTENER_BROCAS_POR_SUPERVISOR_JSON('SUP001');
+
+-- Retorna:
+{
+  "CODIGO": 200,
+  "MENSAJE": "Brocas obtenidas exitosamente para el supervisor",
+  "DATOS": {
+    "ID_SUPERVISOR": "SUP001",
+    "NOM_SUPERVISOR": "Juan Pérez",
+    "PROYECTOS": [
+      {
+        "ID_PROYECTO": 1,
+        "NOM_PROYECTO": "Proyecto X",
+        "PERFORACIONES": [
+          {
+            "ID_PERFORACION": 1,
+            "PROFUNDIDAD_ACTUAL": 150,
+            "BROCAS_INSTANCIADAS": [
+              {
+                "ID_BROCA_INSTANCIADA": "BROCA-001",
+                "NOM_BROCA": "Broca PDC 5 7/8",
+                "MARCA_BROCA": "Smith Services",
+                "TIPO_MOVIMIENTO": "ENTRADA",
+                "PROFUNDIDAD_MOVIMIENTO": 0.0,
+                "FECHA_HORA_MOVIMIENTO": "2026-03-01T08:30:00"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### ✨ Obtener brocas - Versión Simple/Plana
+```sql
+SELECT FUN_OBTENER_BROCAS_POR_SUPERVISOR_SIMPLE_JSON('SUP001');
+
+-- Retorna lista plana (mejor para reportes/Excel):
+[
+  {
+    "ID_PROYECTO": 1,
+    "ID_PERFORACION": 1,
+    "ID_BROCA_INSTANCIADA": "BROCA-001",
+    "NOM_BROCA": "Broca PDC 5 7/8",
+    "MARCA_BROCA": "Smith Services",
+    "TIPO_MOVIMIENTO": "ENTRADA",
+    "PROFUNDIDAD_MOVIMIENTO": 0.0,
+    "FECHA_HORA_MOVIMIENTO": "2026-03-01T08:30:00"
+  },
+  ...
+]
+```
+
+### Ejemplo: Funciones para Brocas Instanciadas
+
+#### Eliminar una broca del inventario
+```sql
+SELECT FUN_ELIMINAR_BROCAINSTANCIADA_POR_ID_JSON('BROCA-001');
+
+-- Retorna:
+{
+  "CODIGO": 200,
+  "MENSAJE": "Broca instanciada eliminada exitosamente"
+}
+```
 
 ## 📈 Estadísticas y Reportes
 
@@ -516,16 +669,18 @@ Para problemas o preguntas:
 
 ## 📅 Versión
 
-- **v1.0.0-beta** - Abril 2026 (EN DESARROLLO)
+- **v1.0.0-beta** - Mayo 2026 (EN DESARROLLO)
   - Sistema base completo
   - 10 tablas funcionales
   - 40 brocas en inventario
   - 6 análisis estadísticos
   - Script de setup automático
+  - ✨ **NUEVO**: Funciones de eliminación de brocas
+  - ✨ **NUEVO**: Consultas avanzadas de brocas por supervisor (versión jerárquica y simple)
 
 ---
 
-**Última actualización**: Abril 21, 2026
+**Última actualización**: Mayo 14, 2026
 
 **Autor**: SrJaniot
 

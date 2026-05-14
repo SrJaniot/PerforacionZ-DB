@@ -8,77 +8,77 @@
 -- Prueba 1.1: Validación exitosa - Todos los datos válidos
 SELECT 'PRUEBA 1.1: Validación exitosa' as PRUEBA;
 SELECT FUN_VALIDAR_BROCAS(
-    99,
     'Broca Test',
     'PDC',
     'Prueba de validación',
     5.875,
-    'Test Matrix'
+    'Test Matrix',
+    'Test Brand'
 ) as RESULTADO;
 
--- Prueba 1.2: ID_BROCA nulo
-SELECT 'PRUEBA 1.2: ID_BROCA nulo - DEBE FALLAR' as PRUEBA;
+-- Prueba 1.2: NOM_BROCA nulo
+SELECT 'PRUEBA 1.2: NOM_BROCA nulo - DEBE FALLAR' as PRUEBA;
 SELECT FUN_VALIDAR_BROCAS(
-    NULL,
-    'Broca Test',
-    'PDC',
-    'Prueba',
-    5.875,
-    'Test Matrix'
-) as RESULTADO;
-
--- Prueba 1.3: NOM_BROCA nulo
-SELECT 'PRUEBA 1.3: NOM_BROCA nulo - DEBE FALLAR' as PRUEBA;
-SELECT FUN_VALIDAR_BROCAS(
-    99,
     NULL,
     'PDC',
     'Prueba',
     5.875,
-    'Test Matrix'
+    'Test Matrix',
+    'Test Brand'
 ) as RESULTADO;
 
--- Prueba 1.4: TIPO_BROCA vacío
-SELECT 'PRUEBA 1.4: TIPO_BROCA vacío - DEBE FALLAR' as PRUEBA;
+-- Prueba 1.3: TIPO_BROCA vacío
+SELECT 'PRUEBA 1.3: TIPO_BROCA vacío - DEBE FALLAR' as PRUEBA;
 SELECT FUN_VALIDAR_BROCAS(
-    99,
     'Broca Test',
     '',
     'Prueba',
     5.875,
-    'Test Matrix'
+    'Test Matrix',
+    'Test Brand'
 ) as RESULTADO;
 
--- Prueba 1.5: TAMANIO_BROCA negativo
-SELECT 'PRUEBA 1.5: TAMANIO_BROCA negativo - DEBE FALLAR' as PRUEBA;
+-- Prueba 1.4: TAMANIO_BROCA negativo
+SELECT 'PRUEBA 1.4: TAMANIO_BROCA negativo - DEBE FALLAR' as PRUEBA;
 SELECT FUN_VALIDAR_BROCAS(
-    99,
     'Broca Test',
     'PDC',
     'Prueba',
     -5.875,
-    'Test Matrix'
+    'Test Matrix',
+    'Test Brand'
 ) as RESULTADO;
 
--- Prueba 1.6: TAMANIO_BROCA cero
-SELECT 'PRUEBA 1.6: TAMANIO_BROCA cero - DEBE FALLAR' as PRUEBA;
+-- Prueba 1.5: TAMANIO_BROCA cero
+SELECT 'PRUEBA 1.5: TAMANIO_BROCA cero - DEBE FALLAR' as PRUEBA;
 SELECT FUN_VALIDAR_BROCAS(
-    99,
     'Broca Test',
     'PDC',
     'Prueba',
     0,
-    'Test Matrix'
+    'Test Matrix',
+    'Test Brand'
 ) as RESULTADO;
 
--- Prueba 1.7: MATRIX_BROCA nulo
-SELECT 'PRUEBA 1.7: MATRIX_BROCA nulo - DEBE FALLAR' as PRUEBA;
+-- Prueba 1.6: MATRIX_BROCA nulo
+SELECT 'PRUEBA 1.6: MATRIX_BROCA nulo - DEBE FALLAR' as PRUEBA;
 SELECT FUN_VALIDAR_BROCAS(
-    99,
     'Broca Test',
     'PDC',
     'Prueba',
     5.875,
+    NULL,
+    'Test Brand'
+) as RESULTADO;
+
+-- Prueba 1.7: MARCA_BROCA nulo
+SELECT 'PRUEBA 1.7: MARCA_BROCA nulo - DEBE FALLAR' as PRUEBA;
+SELECT FUN_VALIDAR_BROCAS(
+    'Broca Test',
+    'PDC',
+    'Prueba',
+    5.875,
+    'Test Matrix',
     NULL
 ) as RESULTADO;
 
@@ -94,6 +94,7 @@ SELECT FUN_INSERTAR_BROCAS_JSON(
     'Broca de prueba para validación exitosa',
     6.5,
     'PDC Matrix',
+    'Smith Services',
     'desarrollo'
 ) as RESULTADO;
 
@@ -105,6 +106,7 @@ SELECT FUN_INSERTAR_BROCAS_JSON(
     'Intento de segunda inserción con auto-generación de ID',
     5.875,
     'Test Matrix',
+    'Baker Hughes',
     'desarrollo'
 ) as RESULTADO;
 
@@ -121,6 +123,7 @@ SELECT FUN_ACTUALIZAR_BROCAS_JSON(
     'Descripción actualizada',
     7.0,
     'Acero Mejorado',
+    'Weatherford',
     'desarrollo'
 ) as RESULTADO;
 
@@ -133,6 +136,7 @@ SELECT FUN_ACTUALIZAR_BROCAS_JSON(
     'Test',
     5.0,
     'Test Matrix',
+    'Varel',
     'desarrollo'
 ) as RESULTADO;
 
